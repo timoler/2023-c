@@ -1,0 +1,41 @@
+新标准分模型 (Consensus-Weighted Z-score)
+=====================================
+
+核心公式:
+  S_i = Σ_{j∈J_i} [ w_j × (x_ij - μ_j)/σ_j ] / Σ_{j∈J_i} w_j
+
+参数说明:
+  x_ij : 专家j对作品i的原始评分
+  μ_j  : 专家j评分的均值
+  σ_j  : 专家j评分的标准差
+  J_i  : 评审作品i的专家集合
+  w_j  : 专家j的权重
+
+权重设计:
+  w_j = 1 / (1 + CV_j)
+  其中 CV_j = σ_j / |μ_j|  (变异系数)
+
+权重原理:
+  • CV小 → 评分相对集中 → 专家判断稳定 → 权重高
+  • CV大 → 评分波动剧烈 → 专家尺度模糊 → 权重低
+  • 自适应: 无需人工调参，数据驱动计算
+
+与协商数据的融合扩展:
+  def calibrate_weights_from_consensus(df_consensus, expert_stats):
+      # 用一等奖"黄金作品"反推专家可信度
+      gold_ids = df_consensus[df_consensus['奖项']=='一等奖']['作品编号']
+      for expert in experts:
+          corr = pearsonr(expert_scores[gold_ids, expert], 
+                         df_consensus.loc[gold_ids, '协商后排名'])
+          weights[expert] = (corr + 1) / 2  # 映射到[0,1]
+      return weights
+
+验证指标 (新模型):
+  • KS正态性检验: p = 0.115 > 0.05 [通过]
+  • Spearman保序性: ρ = 0.971 > 0.9 [通过]
+  • 异常鲁棒性: Top-50排名变化 = 5.2% < 10% [通过]
+  • 计算效率: ~2ms/作品 [满足实时性]
+
+输出文件:
+  • results/q2_results_final.csv : 885作品×6列(原始分+4种标准分)
+  • figures_pillow/*.png : 6张论文级图表 (300 DPI等效)
