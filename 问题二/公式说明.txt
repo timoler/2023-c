@@ -1,41 +1,119 @@
-新标准分模型 (Consensus-Weighted Z-score)
-=====================================
+问题二修正版公式说明
+====================
 
-核心公式:
-  S_i = Σ_{j∈J_i} [ w_j × (x_ij - μ_j)/σ_j ] / Σ_{j∈J_i} w_j
+一、数据结构修正
 
-参数说明:
-  x_ij : 专家j对作品i的原始评分
-  μ_j  : 专家j评分的均值
-  σ_j  : 专家j评分的标准差
-  J_i  : 评审作品i的专家集合
-  w_j  : 专家j的权重
+原表中的“专家一、专家二、……”只是每份作品的评审位置，不代表同一列都是同一位专家。
+修正版将每条评分记录展开为：
 
-权重设计:
-  w_j = 1 / (1 + CV_j)
-  其中 CV_j = σ_j / |μ_j|  (变异系数)
+  (作品编号, 评审阶段, 评审位置, 专家编码, 原始分)
 
-权重原理:
-  • CV小 → 评分相对集中 → 专家判断稳定 → 权重高
-  • CV大 → 评分波动剧烈 → 专家尺度模糊 → 权重低
-  • 自适应: 无需人工调参，数据驱动计算
+然后按“评审阶段 + 专家编码”统计专家尺度。
 
-与协商数据的融合扩展:
-  def calibrate_weights_from_consensus(df_consensus, expert_stats):
-      # 用一等奖"黄金作品"反推专家可信度
-      gold_ids = df_consensus[df_consensus['奖项']=='一等奖']['作品编号']
-      for expert in experts:
-          corr = pearsonr(expert_scores[gold_ids, expert], 
-                         df_consensus.loc[gold_ids, '协商后排名'])
-          weights[expert] = (corr + 1) / 2  # 映射到[0,1]
-      return weights
+第二阶段列映射为：
 
-验证指标 (新模型):
-  • KS正态性检验: p = 0.115 > 0.05 [通过]
-  • Spearman保序性: ρ = 0.971 > 0.9 [通过]
-  • 异常鲁棒性: Top-50排名变化 = 5.2% < 10% [通过]
-  • 计算效率: ~2ms/作品 [满足实时性]
+  第一位专家: 专家编码列23, 原始分列24
+  第二位专家: 专家编码列27, 原始分列28
+  第三位专家: 专家编码列31, 原始分列32
 
-输出文件:
-  • results/q2_results_final.csv : 885作品×6列(原始分+4种标准分)
-  • figures_pillow/*.png : 6张论文级图表 (300 DPI等效)
+不再读取第二阶段标准分列作为原始分。
+
+
+二、基础标准化
+
+对作品 i、阶段 s、专家 e 的原始分 x_i,s,e：
+
+  z_i,s,e = (x_i,s,e - μ_s,e) / σ_s,e
+
+其中 μ_s,e 和 σ_s,e 均按“阶段 + 专家编码”从数据2.1中估计。
+
+稳健标准分：
+
+  rz_i,s,e = (x_i,s,e - median_s,e) / MAD_s,e
+
+其中：
+
+  MAD_s,e = 1.4826 * median(|x - median_s,e|)
+
+百分位法：
+
+  p_i,s,e = rank_e(x_i,s,e) / n_s,e
+
+
+三、CV权重
+
+基础权重仍保留变异系数思想，但只作为候选权重：
+
+  w_cv_s,e = 1 / (1 + CV_s,e)
+  CV_s,e = σ_s,e / |μ_s,e|
+
+注意：评分波动小不必然说明专家更可靠，因此该权重不能单独作为“专家可信度”的充分证明。
+
+
+四、数据1校准权重
+
+数据1的一等奖作品提供协商排序。由于名次数字越小代表越好，所以应使用 -rank 与专家原始分计算相关性：
+
+  r_s,e = Spearman(score_s,e, -rank)
+
+映射到 [0,1]：
+
+  c_raw_s,e = (r_s,e + 1) / 2
+
+考虑单个专家在一等奖样本上的评分次数有限，使用样本量收缩：
+
+  shrink_s,e = n_s,e / (n_s,e + 10)
+  c_s,e = 0.5 + shrink_s,e * (c_raw_s,e - 0.5)
+
+若某专家无法在数据1中校准，则在程序中使用中性校准因子 0.75。
+
+
+五、最终候选标准分
+
+CV加权标准分：
+
+  S_cv_i = sum(w_cv_s,e * z_i,s,e) / sum(w_cv_s,e)
+
+数据1校准加权标准分：
+
+  w_s,e = w_cv_s,e * c_s,e
+  S_cal_i = sum(w_s,e * z_i,s,e) / sum(w_s,e)
+
+
+六、真实验证结果
+
+本次运行结果来自：
+
+  python 问题二/q2_visualize.py
+
+数据2.1读取结果：
+
+  作品数 = 885
+  第一阶段专家数 = 42
+  第二阶段专家数 = 10
+
+主要指标：
+
+  classic_z              KS p=5.59e-11, rho_raw=0.8965, rho_final=0.4942
+  robust_z               KS p=1.70e-11, rho_raw=0.8706, rho_final=0.4355
+  percentile             KS p=5.96e-06, rho_raw=0.8665, rho_final=0.4588
+  cv_weighted_z          KS p=1.74e-11, rho_raw=0.8947, rho_final=0.5111
+  calibrated_weighted_z  KS p=1.07e-11, rho_raw=0.8894, rho_final=0.5108
+
+结论口径：
+
+  1. 修正后标准分分布未通过正态性检验，不能继续声称 KS p=0.115。
+  2. calibrated_weighted_z 接入了数据1校准，Top-50扰动变化均值最低。
+  3. cv_weighted_z 与原最终成绩排序相关略高。
+  4. 当前结果支持“候选方案对比”，不支持直接宣称“新模型均衡最优”。
+
+
+七、输出文件
+
+  results/q2_corrected/q2_work_scores_corrected.csv
+  results/q2_corrected/q2_review_long_corrected.csv
+  results/q2_corrected/q2_expert_stats_corrected.csv
+  results/q2_corrected/q2_validation_metrics.csv
+  results/q2_corrected/q2_robustness_metrics.csv
+  results/q2_corrected/复现清单.json
+  问题二/figures_corrected/*.png

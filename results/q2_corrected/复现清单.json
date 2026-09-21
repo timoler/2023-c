@@ -1,0 +1,111 @@
+{
+  "command": "python 问题二/q2_visualize.py",
+  "random_seed": 20230921,
+  "inputs": {
+    "数据2.1 .xlsx": "56f3f89af1aea2cc906e4f782e240377023c97bd36c2fa11940e9f0311ae140a",
+    "数据1.xlsx": "6b657b4773f320a186fc51efbd00805836f738651ea19934b57757b24e1cbd92"
+  },
+  "outputs": {
+    "work_scores": "E:\\数模获奖论文\\2023年中国研究生数学建模竞赛赛题\\C题\\results\\q2_corrected\\q2_work_scores_corrected.csv",
+    "review_long": "E:\\数模获奖论文\\2023年中国研究生数学建模竞赛赛题\\C题\\results\\q2_corrected\\q2_review_long_corrected.csv",
+    "expert_stats": "E:\\数模获奖论文\\2023年中国研究生数学建模竞赛赛题\\C题\\results\\q2_corrected\\q2_expert_stats_corrected.csv",
+    "metrics": "E:\\数模获奖论文\\2023年中国研究生数学建模竞赛赛题\\C题\\results\\q2_corrected\\q2_validation_metrics.csv",
+    "robustness": "E:\\数模获奖论文\\2023年中国研究生数学建模竞赛赛题\\C题\\results\\q2_corrected\\q2_robustness_metrics.csv",
+    "figures": "E:\\数模获奖论文\\2023年中国研究生数学建模竞赛赛题\\C题\\问题二\\figures_corrected"
+  },
+  "best_method": "calibrated_weighted_z",
+  "validation_summary": [
+    {
+      "method": "classic_z",
+      "n_valid": 885,
+      "ks_p_after_rescale": 5.592614606781274e-11,
+      "spearman_vs_raw_mean": 0.8964740774427093,
+      "spearman_vs_original_final_score": 0.494183767920207,
+      "milliseconds_per_work": 4.366795706214439,
+      "top50_change_rate_mean": 0.042000000000000016,
+      "top50_change_rate_p95": 0.07999999999999996
+    },
+    {
+      "method": "robust_z",
+      "n_valid": 885,
+      "ks_p_after_rescale": 1.696872945924012e-11,
+      "spearman_vs_raw_mean": 0.8706277632142001,
+      "spearman_vs_original_final_score": 0.43553904799563264,
+      "milliseconds_per_work": 4.366795706214439,
+      "top50_change_rate_mean": 0.04800000000000003,
+      "top50_change_rate_p95": 0.07099999999999998
+    },
+    {
+      "method": "percentile",
+      "n_valid": 885,
+      "ks_p_after_rescale": 5.961271614180002e-06,
+      "spearman_vs_raw_mean": 0.8664681905745273,
+      "spearman_vs_original_final_score": 0.4588429882665875,
+      "milliseconds_per_work": 4.366795706214439,
+      "top50_change_rate_mean": 0.050000000000000024,
+      "top50_change_rate_p95": 0.09099999999999994
+    },
+    {
+      "method": "cv_weighted_z",
+      "n_valid": 885,
+      "ks_p_after_rescale": 1.7447424947923208e-11,
+      "spearman_vs_raw_mean": 0.8947262686382812,
+      "spearman_vs_original_final_score": 0.5110905341285141,
+      "milliseconds_per_work": 4.366795706214439,
+      "top50_change_rate_mean": 0.042,
+      "top50_change_rate_p95": 0.07999999999999996
+    },
+    {
+      "method": "calibrated_weighted_z",
+      "n_valid": 885,
+      "ks_p_after_rescale": 1.0650973972059413e-11,
+      "spearman_vs_raw_mean": 0.8893946783491039,
+      "spearman_vs_original_final_score": 0.5108158069572953,
+      "milliseconds_per_work": 4.366795706214439,
+      "top50_change_rate_mean": 0.040000000000000015,
+      "top50_change_rate_p95": 0.07999999999999996
+    }
+  ],
+  "robustness_summary": [
+    {
+      "method": "classic_z",
+      "top50_change_rate_mean": 0.042000000000000016,
+      "top50_change_rate_p95": 0.07999999999999996,
+      "perturbation_repeats": 10,
+      "perturbed_review_share": 0.05,
+      "noise_sd": 8.0
+    },
+    {
+      "method": "robust_z",
+      "top50_change_rate_mean": 0.04800000000000003,
+      "top50_change_rate_p95": 0.07099999999999998,
+      "perturbation_repeats": 10,
+      "perturbed_review_share": 0.05,
+      "noise_sd": 8.0
+    },
+    {
+      "method": "percentile",
+      "top50_change_rate_mean": 0.050000000000000024,
+      "top50_change_rate_p95": 0.09099999999999994,
+      "perturbation_repeats": 10,
+      "perturbed_review_share": 0.05,
+      "noise_sd": 8.0
+    },
+    {
+      "method": "cv_weighted_z",
+      "top50_change_rate_mean": 0.042,
+      "top50_change_rate_p95": 0.07999999999999996,
+      "perturbation_repeats": 10,
+      "perturbed_review_share": 0.05,
+      "noise_sd": 8.0
+    },
+    {
+      "method": "calibrated_weighted_z",
+      "top50_change_rate_mean": 0.040000000000000015,
+      "top50_change_rate_p95": 0.07999999999999996,
+      "perturbation_repeats": 10,
+      "perturbed_review_share": 0.05,
+      "noise_sd": 8.0
+    }
+  ]
+}
