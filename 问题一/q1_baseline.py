@@ -187,7 +187,7 @@ for run in range(N_RUNS):
 df = pd.DataFrame(results)
 
 df.to_csv(
-    "随机均衡分配100次结果.csv",
+    "问题一/results/q1_random_baseline_100runs.csv",
     index=False,
     encoding="utf-8-sig"
 )
@@ -239,15 +239,31 @@ for metric in metrics:
 # 与贪心结果比较
 # ============================================================
 
-greedy = {
-    "cross_std": 0.4088,
-    "cross_min": 3,
-    "cross_max": 5,
-    "zero_ratio": 0.0,
-    "ratio_3_4": 0.9726,
-    "ratio_2_5": 1.0,
-    "mse": 0.1671
-}
+# 从 q1_solve.py 生成的结果读取贪心方案指标，避免硬编码展示值。
+try:
+    greedy_cross = pd.read_csv(
+        "问题一/results/q1_cross_counts.csv",
+        encoding="utf-8-sig"
+    )["共同评审作品数"].to_numpy()
+
+    greedy = {
+        "cross_std": float(greedy_cross.std()),
+        "cross_min": int(greedy_cross.min()),
+        "cross_max": int(greedy_cross.max()),
+        "zero_ratio": float((greedy_cross == 0).mean()),
+        "ratio_3_4": float(
+            ((greedy_cross >= 3) & (greedy_cross <= 4)).mean()
+        ),
+        "ratio_2_5": float(
+            ((greedy_cross >= 2) & (greedy_cross <= 5)).mean()
+        ),
+        "mse": float(((greedy_cross - TARGET_CROSS) ** 2).mean()),
+    }
+except FileNotFoundError:
+    raise SystemExit(
+        "未找到 问题一/results/q1_cross_counts.csv，"
+        "请先运行 q1_solve.py 生成贪心结果。"
+    )
 
 comparison = []
 
@@ -262,7 +278,7 @@ for metric in metrics:
 comparison_df = pd.DataFrame(comparison)
 
 comparison_df.to_csv(
-    "随机与贪心对比.csv",
+    "问题一/results/q1_comparison.csv",
     index=False,
     encoding="utf-8-sig"
 )

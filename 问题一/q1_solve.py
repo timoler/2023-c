@@ -184,7 +184,7 @@ assignment_df.insert(
 )
 
 assignment_df.to_csv(
-    "作品专家分配方案.csv",
+    "问题一/results/q1_assignment.csv",
     index=False,
     encoding="utf-8-sig"
 )
@@ -210,7 +210,7 @@ load_df = pd.DataFrame({
 })
 
 load_df.to_csv(
-    "专家工作量.csv",
+    "问题一/results/q1_expert_load.csv",
     index=False,
     encoding="utf-8-sig"
 )
@@ -242,7 +242,7 @@ cross_values = np.array(cross_values)
 pair_df = pd.DataFrame(pair_records)
 
 pair_df.to_csv(
-    "专家交叉次数.csv",
+    "问题一/results/q1_cross_counts.csv",
     index=False,
     encoding="utf-8-sig"
 )
@@ -311,7 +311,7 @@ distribution_df["比例"] = (
 )
 
 distribution_df.to_csv(
-    "专家交叉次数分布.csv",
+    "问题一/results/q1_cross_distribution.csv",
     index=False,
     encoding="utf-8-sig"
 )
@@ -335,6 +335,72 @@ print("=" * 60)
 
 print(f"交叉偏差平方和 SSE = {objective:.4f}")
 print(f"交叉均方误差 MSE = {mse_cross:.6f}")
+
+
+# =========================================================
+# 10.5 评价指标汇总（q1_metrics.csv）
+# =========================================================
+
+metrics_df = pd.DataFrame([
+    {
+        "指标": "交叉次数标准差",
+        "数值": float(cross_values.std()),
+        "方向": "越小越好",
+        "说明": "任意两位专家共同评审次数的离散程度"
+    },
+    {
+        "指标": "交叉次数方差",
+        "数值": float(cross_values.var()),
+        "方向": "越小越好",
+        "说明": "交叉次数的方差"
+    },
+    {
+        "指标": "交叉次数最小值",
+        "数值": int(cross_values.min()),
+        "方向": "越大越好",
+        "说明": "全体专家对的最小共同评审次数"
+    },
+    {
+        "指标": "交叉次数最大值",
+        "数值": int(cross_values.max()),
+        "方向": "越小越好",
+        "说明": "全体专家对的最大共同评审次数"
+    },
+    {
+        "指标": "交叉均方误差MSE",
+        "数值": float(mse_cross),
+        "方向": "越小越好",
+        "说明": f"相对理论均值 {TARGET_CROSS:.4f} 的均方偏差"
+    },
+    {
+        "指标": "交叉3~4次专家对比例",
+        "数值": float(
+            np.mean((cross_values >= 3) & (cross_values <= 4))
+        ),
+        "方向": "越大越好",
+        "说明": "交叉次数落在 3~4 的专家对占比"
+    },
+    {
+        "指标": "零交叉专家对比例",
+        "数值": float(np.mean(cross_values == 0)),
+        "方向": "越小越好",
+        "说明": "从未共同评审的专家对占比"
+    },
+    {
+        "指标": "工作量标准差",
+        "数值": float(expert_load.std()),
+        "方向": "越小越好",
+        "说明": "125 位专家评审作品数的离散程度"
+    },
+])
+
+metrics_df["数值"] = metrics_df["数值"].round(6)
+
+metrics_df.to_csv(
+    "问题一/results/q1_metrics.csv",
+    index=False,
+    encoding="utf-8-sig"
+)
 
 
 # =========================================================
@@ -362,7 +428,7 @@ plt.legend()
 plt.tight_layout()
 
 plt.savefig(
-    "专家工作量分布.png",
+    "问题一/figures/q1_fig01_expert_workload.png",
     dpi=300
 )
 
@@ -401,7 +467,7 @@ plt.legend()
 plt.tight_layout()
 
 plt.savefig(
-    "专家交叉次数分布.png",
+    "问题一/figures/q1_fig02_cross_distribution.png",
     dpi=300
 )
 
@@ -430,7 +496,7 @@ plt.title("专家交叉评审矩阵")
 plt.tight_layout()
 
 plt.savefig(
-    "专家交叉矩阵热力图.png",
+    "问题一/figures/q1_fig03_cross_heatmap.png",
     dpi=300
 )
 
